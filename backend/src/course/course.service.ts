@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ILike } from 'typeorm';
+import { ILike, FindManyOptions } from 'typeorm';
 
 import { CreateCourseDto, UpdateCourseDto } from './course.dto';
 import { Course } from './course.entity';
@@ -15,16 +15,23 @@ export class CourseService {
   }
 
   async findAll(courseQuery: CourseQuery): Promise<Course[]> {
-    Object.keys(courseQuery).forEach((key) => {
-      courseQuery[key] = ILike(`%${courseQuery[key]}%`);
-    });
-    return await Course.find({
-      where: courseQuery,
+    const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC', ...filters } = courseQuery;
+
+    const where = Object.keys(filters).reduce((acc, key) => {
+		acc[key] = ILike(`%${filters[key]}%`);
+		return acc;
+	  }, {});
+
+    const options: FindManyOptions<Course> = {
+      where,
       order: {
-        name: 'ASC',
-        description: 'ASC',
+        [sortBy]: sortOrder,
       },
-    });
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+
+    return await Course.find(options);
   }
 
   async findById(id: string): Promise<Course> {

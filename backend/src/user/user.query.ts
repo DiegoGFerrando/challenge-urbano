@@ -3,4 +3,8 @@ export class UserQuery {
   lastName?: string;
   username?: string;
   role?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'ASC' | 'DESC';
 }

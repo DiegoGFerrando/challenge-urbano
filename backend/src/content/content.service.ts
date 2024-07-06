@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ILike } from 'typeorm';
+import { ILike, FindManyOptions } from 'typeorm';
 
 import { CourseService } from '../course/course.service';
 import { CreateContentDto, UpdateContentDto } from './content.dto';
@@ -25,17 +25,23 @@ export class ContentService {
   }
 
   async findAll(contentQuery: ContentQuery): Promise<Content[]> {
-    Object.keys(contentQuery).forEach((key) => {
-      contentQuery[key] = ILike(`%${contentQuery[key]}%`);
-    });
+    const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC', ...filters } = contentQuery;
 
-    return await Content.find({
-      where: contentQuery,
+    const where = Object.keys(filters).reduce((acc, key) => {
+		acc[key] = ILike(`%${filters[key]}%`);
+		return acc;
+	  }, {});
+
+    const options: FindManyOptions<Content> = {
+      where,
       order: {
-        name: 'ASC',
-        description: 'ASC',
+        [sortBy]: sortOrder,
       },
-    });
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+
+    return await Content.find(options);
   }
 
   async findById(id: string): Promise<Content> {
@@ -66,16 +72,23 @@ export class ContentService {
     courseId: string,
     contentQuery: ContentQuery,
   ): Promise<Content[]> {
-    Object.keys(contentQuery).forEach((key) => {
-      contentQuery[key] = ILike(`%${contentQuery[key]}%`);
-    });
-    return await Content.find({
-      where: { courseId, ...contentQuery },
+	const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC', ...filters } = contentQuery;
+
+    const where = Object.keys(filters).reduce((acc, key) => {
+		acc[key] = ILike(`%${filters[key]}%`);
+		return acc;
+	}, {});
+	
+    const options: FindManyOptions<Content> = {
+      where: { courseId, ...where },
       order: {
-        name: 'ASC',
-        description: 'ASC',
+        [sortBy]: sortOrder,
       },
-    });
+      skip: (page - 1) * limit,
+      take: limit,
+    };
+
+	return await Content.find(options);
   }
 
   async update(
