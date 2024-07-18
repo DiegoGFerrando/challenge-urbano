@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { ILike, FindManyOptions } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
 
 import { CourseService } from '../course/course.service';
 import { CreateContentDto, UpdateContentDto } from './content.dto';
@@ -25,12 +25,18 @@ export class ContentService {
   }
 
   async findAll(contentQuery: ContentQuery): Promise<Content[]> {
-    const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC', ...filters } = contentQuery;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'name',
+      sortOrder = 'ASC',
+      ...filters
+    } = contentQuery;
 
     const where = Object.keys(filters).reduce((acc, key) => {
-		acc[key] = ILike(`%${filters[key]}%`);
-		return acc;
-	  }, {});
+      acc[key] = ILike(`%${filters[key]}%`);
+      return acc;
+    }, {});
 
     const options: FindManyOptions<Content> = {
       where,
@@ -72,13 +78,19 @@ export class ContentService {
     courseId: string,
     contentQuery: ContentQuery,
   ): Promise<Content[]> {
-	const { page = 1, limit = 10, sortBy = 'name', sortOrder = 'ASC', ...filters } = contentQuery;
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'name',
+      sortOrder = 'ASC',
+      ...filters
+    } = contentQuery;
 
     const where = Object.keys(filters).reduce((acc, key) => {
-		acc[key] = ILike(`%${filters[key]}%`);
-		return acc;
-	}, {});
-	
+      acc[key] = ILike(`%${filters[key]}%`);
+      return acc;
+    }, {});
+
     const options: FindManyOptions<Content> = {
       where: { courseId, ...where },
       order: {
@@ -88,7 +100,7 @@ export class ContentService {
       take: limit,
     };
 
-	return await Content.find(options);
+    return await Content.find(options);
   }
 
   async update(

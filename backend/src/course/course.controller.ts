@@ -19,6 +19,10 @@ import { ContentQuery } from '../content/content.query';
 import { ContentService } from '../content/content.service';
 import { Roles } from '../decorators/roles.decorator';
 import { Role } from '../enums/role.enum';
+import { CreateSectionDto, UpdateSectionDto } from '../section/section.dto';
+import { Section } from '../section/section.entity';
+import { SectionQuery } from '../section/section.query';
+import { SectionService } from '../section/section.service';
 import { CreateCourseDto, UpdateCourseDto } from './course.dto';
 import { Course } from './course.entity';
 import { CourseQuery } from './course.query';
@@ -32,6 +36,7 @@ export class CourseController {
   constructor(
     private readonly courseService: CourseService,
     private readonly contentService: ContentService,
+    private readonly sectionService: SectionService,
   ) {}
 
   @Post()
@@ -100,4 +105,43 @@ export class CourseController {
   ): Promise<string> {
     return await this.contentService.delete(id, contentId);
   }
+
+  @Post('/:id/sections')
+  @Roles(Role.Admin, Role.Editor)
+  async saveSection(
+    @Param('id') id: string,
+    @Body() createSectionDto: CreateSectionDto,
+  ): Promise<Section> {
+    return await this.sectionService.save(id, createSectionDto);
+  }
+
+  /* ----------------------------------------- */
+  @Get('/:id/sections')
+  async findAllSectionsByCourseId(
+    @Param('id') id: string,
+    @Query() sectionQuery: SectionQuery,
+  ): Promise<Section[]> {
+    return await this.sectionService.findAllByCourseId(id, sectionQuery);
+  }
+
+  @Put('/:id/sections/:sectionId')
+  @Roles(Role.Admin, Role.Editor)
+  async updateSection(
+    @Param('id') id: string,
+    @Param('sectionId') sectionId: string,
+    @Body() updateSectionDto: UpdateSectionDto,
+  ): Promise<Section> {
+    return await this.sectionService.update(id, sectionId, updateSectionDto);
+  }
+
+  @Delete('/:id/sections/:sectionId')
+  @Roles(Role.Admin)
+  async deleteSection(
+    @Param('id') id: string,
+    @Param('sectionId') sectionId: string,
+  ): Promise<string> {
+    return await this.sectionService.delete(id, sectionId);
+  }
+
+  /* ----------------------------------------- */
 }
