@@ -14,6 +14,11 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { FormattedEnrollmentDto } from 'src/enrollment/enrollment.dto';
+import { Enrollment } from 'src/enrollment/enrollment.entity';
+import { EnrollmentModule } from 'src/enrollment/enrollment.module';
+import { EnrollmentQuery } from 'src/enrollment/enrollment.query';
+import { EnrollmentService } from 'src/enrollment/enrollment.service';
 
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -31,7 +36,10 @@ import { UserService } from './user.service';
 @UseGuards(JwtGuard, RolesGuard)
 @UseInterceptors(ClassSerializerInterceptor)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly enrollmentService: EnrollmentService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -65,5 +73,18 @@ export class UserController {
   @Roles(Role.Admin)
   async delete(@Param('id') id: string): Promise<string> {
     return await this.userService.delete(id);
+  }
+
+  @Get('/:id/enrollments')
+  @Roles(Role.Admin, Role.Editor)
+  async findEnrollments(
+    @Param('id') userId: string,
+    @Query() enrollmentQuery: EnrollmentQuery,
+  ): Promise<FormattedEnrollmentDto[]> {
+    const enrollmentData = await this.enrollmentService.findAllByUserId(
+      userId,
+      enrollmentQuery,
+    );
+    return await this.enrollmentService.formatEnrollment(enrollmentData);
   }
 }

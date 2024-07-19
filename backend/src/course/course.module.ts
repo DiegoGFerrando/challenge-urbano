@@ -7,7 +7,11 @@ import { CourseController } from './course.controller';
 import { CourseService } from './course.service';
 
 @Module({
-  imports: [forwardRef(() => ContentModule), EnrollmentModule, SectionModule],
+  imports: [
+    forwardRef(() => ContentModule),
+    forwardRef(() => SectionModule),
+    forwardRef(() => EnrollmentModule),
+  ],
   controllers: [CourseController],
   providers: [CourseService],
   exports: [CourseService],

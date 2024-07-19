@@ -10,7 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { CreateEnrollmentDto } from 'src/enrollment/enrollment.dto';
+import {
+  CreateEnrollmentDto,
+  FormattedEnrollmentDto,
+} from 'src/enrollment/enrollment.dto';
 import { Enrollment } from 'src/enrollment/enrollment.entity';
 import { EnrollmentQuery } from 'src/enrollment/enrollment.query';
 import { EnrollmentService } from 'src/enrollment/enrollment.service';
@@ -166,11 +169,12 @@ export class CourseController {
   async findAllEnrollmentsBySectionId(
     @Param('sectionId') sectionId: string,
     @Query() enrollmentQuery: EnrollmentQuery,
-  ): Promise<Enrollment[]> {
-    return await this.enrollmentService.findAllBySectionId(
+  ): Promise<FormattedEnrollmentDto[]> {
+    const enrollmentData = await this.enrollmentService.findAllBySectionId(
       sectionId,
       enrollmentQuery,
     );
+    return await this.enrollmentService.formatEnrollment(enrollmentData);
   }
 
   @Delete('/:id/sections/:sectionId/enrollments')

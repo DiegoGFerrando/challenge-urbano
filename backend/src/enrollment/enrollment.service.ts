@@ -3,7 +3,7 @@ import { FindManyOptions, ILike } from 'typeorm';
 
 import { SectionService } from '../section/section.service';
 import { UserService } from '../user/user.service';
-import { CreateEnrollmentDto } from './enrollment.dto';
+import { CreateEnrollmentDto, FormattedEnrollmentDto } from './enrollment.dto';
 import { Enrollment } from './enrollment.entity';
 import { EnrollmentQuery } from './enrollment.query';
 
@@ -73,6 +73,7 @@ export class EnrollmentService {
     }, {});
 
     const options: FindManyOptions<Enrollment> = {
+      relations: ['section', 'section.course', 'user'],
       where: { sectionId, ...where },
       order: {
         [sortBy]: sortOrder,
@@ -102,6 +103,7 @@ export class EnrollmentService {
     }, {});
 
     const options: FindManyOptions<Enrollment> = {
+      relations: ['section', 'section.course', 'user'],
       where: { userId, ...where },
       order: {
         [sortBy]: sortOrder,
@@ -132,5 +134,24 @@ export class EnrollmentService {
 
   async count(): Promise<number> {
     return await Enrollment.count();
+  }
+
+  async formatEnrollment(
+    enrollments: Enrollment[],
+  ): Promise<FormattedEnrollmentDto[]> {
+    return enrollments.map((enrollment) => {
+      const { section, user, enrolled_at } = enrollment;
+
+      const { course } = section;
+
+      return {
+        courseName: course.name,
+        courseDescription: course.description,
+        sectionNumber: section.number,
+        sectionSchedule: section.schedule,
+        userName: user.firstName + ' ' + user.lastName,
+        enrolledAt: enrolled_at.toISOString(),
+      };
+    });
   }
 }

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { ILike, FindManyOptions } from 'typeorm';
+import { FindManyOptions, ILike } from 'typeorm';
 
 import { CreateUserDto, UpdateUserDto } from './user.dto';
 import { User } from './user.entity';
@@ -24,25 +24,31 @@ export class UserService {
   }
 
   async findAll(userQuery: UserQuery): Promise<User[]> {
-	const { page = 1, limit = 10, sortBy = 'username', sortOrder = 'ASC', ...filters } = userQuery;
-	
-    const where = Object.keys(filters).reduce((acc, key) => {
-		if (key !== 'role') {
-			acc[key] = ILike(`%${filters[key]}%`);
-		} else {
-			acc[key] = filters[key];
-		}
-		return acc;
-	  }, {});
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'username',
+      sortOrder = 'ASC',
+      ...filters
+    } = userQuery;
 
-	const options: FindManyOptions<User> = {
-		where,
-		order: {
-		  [sortBy]: sortOrder,
-		},
-		skip: (page - 1) * limit,
-		take: limit,
-	  };
+    const where = Object.keys(filters).reduce((acc, key) => {
+      if (key !== 'role') {
+        acc[key] = ILike(`%${filters[key]}%`);
+      } else {
+        acc[key] = filters[key];
+      }
+      return acc;
+    }, {});
+
+    const options: FindManyOptions<User> = {
+      where,
+      order: {
+        [sortBy]: sortOrder,
+      },
+      skip: (page - 1) * limit,
+      take: limit,
+    };
 
     return await User.find(options);
   }

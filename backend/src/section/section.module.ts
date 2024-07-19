@@ -1,4 +1,5 @@
 import { forwardRef, Module } from '@nestjs/common';
+import { EnrollmentModule } from 'src/enrollment/enrollment.module';
 
 import { CourseModule } from '../course/course.module';
 import { SectionService } from './section.service';
