@@ -10,6 +10,10 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { CreateEnrollmentDto } from 'src/enrollment/enrollment.dto';
+import { Enrollment } from 'src/enrollment/enrollment.entity';
+import { EnrollmentQuery } from 'src/enrollment/enrollment.query';
+import { EnrollmentService } from 'src/enrollment/enrollment.service';
 
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -37,6 +41,7 @@ export class CourseController {
     private readonly courseService: CourseService,
     private readonly contentService: ContentService,
     private readonly sectionService: SectionService,
+    private readonly enrollmentService: EnrollmentService,
   ) {}
 
   @Post()
@@ -115,7 +120,6 @@ export class CourseController {
     return await this.sectionService.save(id, createSectionDto);
   }
 
-  /* ----------------------------------------- */
   @Get('/:id/sections')
   async findAllSectionsByCourseId(
     @Param('id') id: string,
@@ -143,5 +147,38 @@ export class CourseController {
     return await this.sectionService.delete(id, sectionId);
   }
 
-  /* ----------------------------------------- */
+  @Post('/:id/sections/:sectionId/enrollments')
+  @Roles(Role.Admin, Role.Editor)
+  async saveEnrollment(
+    @Param('sectionId') sectionId: string,
+    @Body('userId') userId: string,
+    @Body() createEnrollmentDto: CreateEnrollmentDto,
+  ): Promise<Enrollment> {
+    return await this.enrollmentService.save(
+      sectionId,
+      userId,
+      createEnrollmentDto,
+    );
+  }
+
+  @Get('/:id/sections/:sectionId/enrollments')
+  @Roles(Role.Admin, Role.Editor)
+  async findAllEnrollmentsBySectionId(
+    @Param('sectionId') sectionId: string,
+    @Query() enrollmentQuery: EnrollmentQuery,
+  ): Promise<Enrollment[]> {
+    return await this.enrollmentService.findAllBySectionId(
+      sectionId,
+      enrollmentQuery,
+    );
+  }
+
+  @Delete('/:id/sections/:sectionId/enrollments')
+  @Roles(Role.Admin)
+  async deleteEnrollment(
+    @Param('sectionId') sectionId: string,
+    @Param('userId') userId: string,
+  ): Promise<string> {
+    return await this.enrollmentService.delete(sectionId, userId);
+  }
 }

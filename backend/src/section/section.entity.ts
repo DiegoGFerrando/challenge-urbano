@@ -24,7 +24,7 @@ export class Section extends BaseEntity {
   @Column()
   start_date: Date;
 
-  @Column()
+  @Column({ nullable: true })
   end_date: Date;
 
   @Column({ select: false, nullable: false })

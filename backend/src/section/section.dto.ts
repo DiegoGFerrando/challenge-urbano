@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsOptional, IsInt, IsDate } from 'class-validator';
+import {
+  IsDateString,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class CreateSectionDto {
   @IsNotEmpty()
@@ -10,11 +16,11 @@ export class CreateSectionDto {
   schedule: string;
 
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   start_date: Date;
 
   @IsOptional()
-  @IsDate()
+  @IsDateString()
   end_date?: Date;
 }
 
@@ -26,6 +32,6 @@ export class UpdateSectionDto {
 
   @IsOptional()
   @IsNotEmpty()
-  @IsDate()
+  @IsDateString()
   end_date?: Date;
 }

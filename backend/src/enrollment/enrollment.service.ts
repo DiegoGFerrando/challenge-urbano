@@ -62,7 +62,7 @@ export class EnrollmentService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'number',
+      sortBy = 'sectionId',
       sortOrder = 'ASC',
       ...filters
     } = enrollmentQuery;
@@ -91,7 +91,7 @@ export class EnrollmentService {
     const {
       page = 1,
       limit = 10,
-      sortBy = 'number',
+      sortBy = 'sectionId',
       sortOrder = 'ASC',
       ...filters
     } = enrollmentQuery;
