@@ -5,7 +5,7 @@ import { CourseModule } from '../course/course.module';
 import { SectionService } from './section.service';
 
 @Module({
-  imports: [forwardRef(() => CourseModule)],
+  imports: [forwardRef(() => CourseModule), forwardRef(() => EnrollmentModule)],
   controllers: [],
   providers: [SectionService],
   exports: [SectionService],

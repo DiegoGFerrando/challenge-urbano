@@ -3,9 +3,11 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Delete,
+  forwardRef,
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Post,
   Put,
@@ -15,10 +17,10 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { FormattedEnrollmentDto } from 'src/enrollment/enrollment.dto';
-import { Enrollment } from 'src/enrollment/enrollment.entity';
-import { EnrollmentModule } from 'src/enrollment/enrollment.module';
 import { EnrollmentQuery } from 'src/enrollment/enrollment.query';
 import { EnrollmentService } from 'src/enrollment/enrollment.service';
+import { FormattedSectionDto } from 'src/section/section.dto';
+import { SectionService } from 'src/section/section.service';
 
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -38,7 +40,10 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(
     private readonly userService: UserService,
+    @Inject(forwardRef(() => EnrollmentService))
     private readonly enrollmentService: EnrollmentService,
+    @Inject(forwardRef(() => SectionService))
+    private readonly sectionService: SectionService,
   ) {}
 
   @Post()
@@ -86,5 +91,13 @@ export class UserController {
       enrollmentQuery,
     );
     return await this.enrollmentService.formatEnrollment(enrollmentData);
+  }
+
+  @Get('/:id/available-courses')
+  @Roles(Role.Admin, Role.Editor)
+  async findAvailableCourses(
+    @Param('id') userId: string,
+  ): Promise<FormattedSectionDto[]> {
+    return await this.sectionService.findAvailableSectionsForUser(userId);
   }
 }
