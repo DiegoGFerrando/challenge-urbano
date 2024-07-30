@@ -1,14 +1,30 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { FindManyOptions, ILike } from 'typeorm';
 
 import { CourseService } from '../course/course.service';
-import { CreateSectionDto, UpdateSectionDto } from './section.dto';
+import { EnrollmentService } from '../enrollment/enrollment.service';
+import {
+  CreateSectionDto,
+  FormattedSectionDto,
+  UpdateSectionDto,
+} from './section.dto';
 import { Section } from './section.entity';
 import { SectionQuery } from './section.query';
 
 @Injectable()
 export class SectionService {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(
+    @Inject(forwardRef(() => CourseService))
+    private readonly courseService: CourseService,
+    @Inject(forwardRef(() => EnrollmentService))
+    private readonly enrollmentService: EnrollmentService,
+  ) {}
 
   async save(
     courseId: string,
@@ -121,5 +137,58 @@ export class SectionService {
 
   async count(): Promise<number> {
     return await Section.count();
+  }
+
+  async findAvailableSectionsForUser(
+    userId: string,
+  ): Promise<FormattedSectionDto[]> {
+    try {
+      const currentDate = new Date();
+      const enrollmentQuery = {}; // Define the enrollmentQuery variable
+
+      const enrolledCourses = await this.enrollmentService.findAllByUserId(
+        userId,
+        enrollmentQuery,
+      );
+
+      console.log('enrolledCourses:' + JSON.stringify(enrolledCourses));
+
+      const enrolledCourseIds = enrolledCourses.map(
+        (enrollment) => enrollment.section.course.id,
+      );
+
+      console.log('enrolledCourseIds:' + enrolledCourseIds);
+
+      // Find available sections for courses where the user is not already enrolled
+      let availableSectionsQuery = Section.createQueryBuilder('section')
+        .leftJoinAndSelect('section.course', 'course')
+        .where('section.start_date > :currentDate', { currentDate });
+
+      if (enrolledCourseIds.length > 0) {
+        availableSectionsQuery = availableSectionsQuery.andWhere(
+          'section.courseId NOT IN (:...enrolledCourseIds)',
+          {
+            enrolledCourseIds,
+          },
+        );
+      }
+
+      const availableSections = await availableSectionsQuery.getMany();
+
+      return availableSections.map((section) => ({
+        course_id: section.course.id,
+        course_name: section.course.name,
+        course_description: section.course.description,
+        section_number: section.number,
+        section_schedule: section.schedule,
+        section_start_date: section.start_date.toISOString(),
+      }));
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        'Could not retrieve available sections for user',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

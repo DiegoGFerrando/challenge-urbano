@@ -2,7 +2,9 @@ import {
   Body,
   Controller,
   Delete,
+  forwardRef,
   Get,
+  Inject,
   Param,
   Post,
   Put,
@@ -17,6 +19,7 @@ import {
 import { Enrollment } from 'src/enrollment/enrollment.entity';
 import { EnrollmentQuery } from 'src/enrollment/enrollment.query';
 import { EnrollmentService } from 'src/enrollment/enrollment.service';
+import { In } from 'typeorm';
 
 import { JwtGuard } from '../auth/guards/jwt.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -42,8 +45,11 @@ import { CourseService } from './course.service';
 export class CourseController {
   constructor(
     private readonly courseService: CourseService,
+    @Inject(forwardRef(() => ContentService))
     private readonly contentService: ContentService,
+    @Inject(forwardRef(() => SectionService))
     private readonly sectionService: SectionService,
+    @Inject(forwardRef(() => EnrollmentService))
     private readonly enrollmentService: EnrollmentService,
   ) {}
 

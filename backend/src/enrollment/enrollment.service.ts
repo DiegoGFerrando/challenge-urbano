@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { FindManyOptions, ILike } from 'typeorm';
 
 import { SectionService } from '../section/section.service';
@@ -10,7 +16,9 @@ import { EnrollmentQuery } from './enrollment.query';
 @Injectable()
 export class EnrollmentService {
   constructor(
+    @Inject(forwardRef(() => SectionService))
     private readonly sectionService: SectionService,
+    @Inject(forwardRef(() => UserService))
     private readonly userService: UserService,
   ) {}
 

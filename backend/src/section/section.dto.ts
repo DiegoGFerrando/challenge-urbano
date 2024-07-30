@@ -35,3 +35,12 @@ export class UpdateSectionDto {
   @IsDateString()
   end_date?: Date;
 }
+
+export class FormattedSectionDto {
+  course_id: string;
+  course_name: string;
+  course_description: string;
+  section_number: number;
+  section_schedule: string;
+  section_start_date: string;
+}

@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  forwardRef,
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { FindManyOptions, ILike } from 'typeorm';
 
 import { CourseService } from '../course/course.service';
@@ -8,7 +14,10 @@ import { ContentQuery } from './content.query';
 
 @Injectable()
 export class ContentService {
-  constructor(private readonly courseService: CourseService) {}
+  constructor(
+    @Inject(forwardRef(() => CourseService))
+    private readonly courseService: CourseService,
+  ) {}
 
   async save(
     courseId: string,
